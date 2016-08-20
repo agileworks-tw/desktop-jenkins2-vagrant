@@ -11,7 +11,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provider "virtualbox" do |vb|
       vb.memory = "2048"
-      vb.name = "agileworks-desktop-vm"
+      vb.name = "agileworks-vm"
       vb.cpus = 2
   end
 
@@ -46,10 +46,20 @@ Vagrant.configure(2) do |config|
     sudo su - user -l -c '. ~/.nvm/nvm.sh && pm2 restart pm2-webshell'
 
     sudo su - user -l -c '. ~/.nvm/nvm.sh && git clone git://github.com/c9/core.git c9sdk && cd c9sdk && scripts/install-sdk.sh'
+
+    # ref: https://gist.github.com/RIAEvangelist/6335743#gistcomment-1839910
+    sudo su - user -l -c '. ~/.nvm/nvm.sh && cd c9sdk && rm -rf node_modules/pty.js && ~/.c9/node/bin/npm install pty.js'
+
+
     sudo su - user -l -c '. ~/.nvm/nvm.sh && cd c9sdk && pm2 start server.js --name "cloud9" -- --debug -l 0.0.0.0 -p 9083 -w /home/user/workspace -a :'
 
-    sudo su -c "env PATH=$PATH:/home/user/.nvm/versions/node/v5.12.0/bin pm2 startup ubuntu -u user --hp /home/user"
 
+    sudo su -c "env PATH=$PATH:/home/user/.nvm/versions/node/v5.12.0/bin pm2 startup -u user --hp /home/user"
+
+  SHELL
+
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo su - user -l -c '. ~/.nvm/nvm.sh && cd workspace && git clone https://github.com/trunk-studio/electron-demo && cd electron-demo && npm i'
   SHELL
 
 

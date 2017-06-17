@@ -1,5 +1,5 @@
 Vagrant.configure(2) do |config|
-  config.vm.box = "box-cutter/ubuntu1404-desktop"
+  config.vm.box = "box-cutter/ubuntu1604-desktop"
 
   config.vm.network "forwarded_port", guest: 8080, host: 9088
   config.vm.network "forwarded_port", guest: 9083, host: 9083
@@ -11,7 +11,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provider "virtualbox" do |vb|
       vb.memory = "2048"
-      vb.name = "agileworks-vm"
+      vb.name = "agileworks-vm-desktop"
       vb.cpus = 2
   end
 
@@ -20,18 +20,37 @@ Vagrant.configure(2) do |config|
     sudo usermod -aG sudo user
     sudo su -c  'echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers'
     sudo su -c  'echo "user:password" | chpasswd'
-    apt-get -y -q update
+    sudo add-apt-repository -y ppa:openjdk-r/ppa
+    sudo apt-add-repository -y ppa:andrei-pozolotin/maven3
+    sudo add-apt-repository -y ppa:webupd8team/java
+    sudo apt-get -y -q update
+    
+    sudo apt-get -y purge openjdk-7-jdk default-jre default-jdk firefox
+    sudo apt-get -y -q install software-properties-common htop
+    echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+    sudo apt-get -y -q install oracle-java8-installer
+    sudo update-java-alternatives -s java-8-oracle
+
     sudo apt-get -y install daemon unzip git build-essential sqlite3
+
+    # fix terminal can not open
+    sudo locale-gen
+    sudo localectl set-locale LANG="en_US.UTF-8"
     sudo su - user -c 'mkdir workspace'
+
+    # install chrome
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
+    sudo apt-get install -f -y
   SHELL
 
 
 
   config.vm.provision "shell", inline: <<-SHELL
-    # 安裝 node 請用完整版本號碼，使用 v5.12.0 而不是 v5
+    # 安裝 node 請用完整版本號碼，使用 v6.9.5 而不是 v6
 
     sudo su - user -l -c 'wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.31.1/install.sh | bash'
-    sudo su - user -l -c '. ~/.nvm/nvm.sh && nvm install v5.12.0 && nvm alias default v5.12.0 && npm install pm2 -g'
+    sudo su - user -l -c '. ~/.nvm/nvm.sh && nvm install v6.9.5 && nvm alias default v6.9.5 && npm install pm2 webdriver-manager -g && webdriver-manager update'
   SHELL
 
 
@@ -54,12 +73,12 @@ Vagrant.configure(2) do |config|
     sudo su - user -l -c '. ~/.nvm/nvm.sh && cd c9sdk && pm2 start server.js --name "cloud9" -- --debug -l 0.0.0.0 -p 9083 -w /home/user/workspace -a :'
 
 
-    sudo su -c "env PATH=$PATH:/home/user/.nvm/versions/node/v5.12.0/bin pm2 startup -u user --hp /home/user"
+    sudo su -c "env PATH=$PATH:/home/user/.nvm/versions/node/v6.9.5/bin pm2 startup -u user --hp /home/user"
 
   SHELL
 
   config.vm.provision "shell", inline: <<-SHELL
-    sudo su - user -l -c '. ~/.nvm/nvm.sh && cd workspace && git clone https://github.com/trunk-studio/electron-demo && cd electron-demo && npm i'
+    sudo su - user -l -c '. ~/.nvm/nvm.sh && cd workspace && git clone https://github.com/alincode/webdriverio-pageobject.git && cd webdriverio-pageobject && npm i'
   SHELL
 
 

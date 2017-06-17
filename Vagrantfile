@@ -37,11 +37,12 @@ Vagrant.configure(2) do |config|
     sudo locale-gen
     sudo localectl set-locale LANG="en_US.UTF-8"
     sudo su - user -c 'mkdir workspace'
-
+    
     # install chrome
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb
-    sudo apt-get install -f -y
+    sudo su - user -c 'wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb'
+    sudo su - user -c 'sudo dpkg -i --force-depends google-chrome-stable_current_amd64.deb'
+    sudo su - user -c 'sudo apt-get install -f -y'
+    
   SHELL
 
 
